@@ -1,3 +1,7 @@
+#Project 5
+
+## Circuit Diagram
+![Alt text](planning/Project4_CircuitDiagram.drawio.svg)
 
 ## Software Architecture
 ```mermaid
