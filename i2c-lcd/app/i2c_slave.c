@@ -12,6 +12,8 @@ char Datum_In = '0';
 int Data_Cnt = 0;
 int Out_Cnt = 0;
 char Packet[] = {0x03, 0x0, 0x10, 0x13, 0x01, 0x03, 0x05, 0x24};
+int temp_read = 0;
+int packet_counter = 0;
 
 void i2c_slave_init(){
     __disable_interrupt();
@@ -45,42 +47,61 @@ __interrupt void EUSCI_B0_I2C_ISR(void){
     switch(UCB0IV){
         case 0x16:              // ID 16: RXIFG0 asserts after from slave
             Datum_In = UCB0RXBUF;    //receive data and store in Data_In
-            lcd_send_data(Datum_In);
-            switch(Datum_In){
-                case '0':
-                       lcd_clear_bottom();
-                       lcd_clear_top();
-            //         lcd_send_string("Static");
-            //         break;
-            //     case '1':
-            //         lcd_send_string("Toggle");
-            //         break;
-            //     case '2':
-            //         lcd_send_string("Up Count");
-            //         break;
-            //     case '3':
-            //         lcd_send_string("In Out");
-            //         break;
-            //     case '4':
-            //         lcd_send_string("Down Count");
-            //         break;
-            //     case '5':
-            //         lcd_send_string("Rotate Left");
-            //         break;
-            //     case '6':
-            //         lcd_send_string("Rotate Right");
-            //         break;
-            //     case '7':
-            //         lcd_send_string("Fill");
-            //         break;
-            //     case '9':
-            //         lcd_toggle_blink();
-            //         break;
-            //     case 'C':
-            //         lcd_toggle_cursor();
-            //         break;
-            //     case 'D':
-            //         break;
+            // lcd_send_data(Datum_In);
+            if(!temp_read){
+                switch(Datum_In){
+                    case 'G':
+                        lcd_clear_top();
+                        break;
+                    case 'H':
+                        lcd_clear_bottom();
+                        break;
+                    case 'T':
+                        temp_read = 1;
+                        lcd_clear_bottom();
+                        break;
+                    case 'R':
+                        lcd_send_string("Set Window Size");
+                        break;
+                    case '0':
+                        lcd_send_string("Static");
+                        break;
+                    case '1':
+                        lcd_send_string("Toggle");
+                        break;
+                    case '2':
+                        lcd_send_string("Up Count");
+                        break;
+                    case '3':
+                        lcd_send_string("In Out");
+                        break;
+                    case '4':
+                        lcd_send_string("Down Count");
+                        break;
+                    case '5':
+                        lcd_send_string("Rotate Left");
+                        break;
+                    case '6':
+                        lcd_send_string("Rotate Right");
+                        break;
+                    case '9':
+                        lcd_toggle_blink();
+                        break;
+                    case 'C':
+                        lcd_toggle_cursor();
+                        break;
+                    case 'D':
+                        break;
+                }
+            } else {
+                lcd_send_data(Datum_In);
+                packet_counter++;
+                if(packet_counter==5) {
+                    lcd_send_string("        N=");
+                } else if(packet_counter>5){
+                    temp_read = 0;
+                    packet_counter = 0;
+                }
             }
             lcd_send_string(Datum_In);
             // if(Datum_In!='D') lcd_set_key_char(Datum_In);

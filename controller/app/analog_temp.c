@@ -1,4 +1,5 @@
 #include <msp430.h> 
+#include "i2c_master.h"
 //-------------------------------------------------------------------------------
 // Matthew Phillips
 // Prof. Cory Mettler
@@ -19,6 +20,8 @@
 //-------------------------------------------------------------------------------
 
 float ADCvalue;
+char holding[5] = "hello";
+int window = 9;
 
 void analog_temp_init(void)
 {
@@ -60,13 +63,23 @@ void analog_temp_init(void)
 
 float analog_temp_get_temp(){
     ADCCTL0 |= ADCENC | ADCSC;
-    float temp = -1*(1.8663 - 2.5*ADCvalue)/388;
-    return temp;
+    return ADCvalue;
+}
+
+void analog_temp_set_window(int size){
+    window = size;
 }
 
 #pragma vector = ADC_VECTOR
 __interrupt void ADC_ISR (void){
     __bic_SR_register_on_exit(LPM0_bits);   // Wake CPU
-    ADCvalue = ADCMEM0;
+    float sum = 0;
+    int i;
+    for (i =0; i<window; i++){
+        ADCvalue = ADCMEM0;
+        ADCvalue = -1*(1.8663 - 2.1*ADCvalue)/388;
+        sum+=ADCvalue;
+    }
+    ADCvalue = sum/window;
 }
 // ----- END ADC ISR -----
