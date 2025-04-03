@@ -59,7 +59,9 @@ void analog_temp_init(void)
 }
 
 float analog_temp_get_temp(){
-    return ADCvalue;
+    ADCCTL0 |= ADCENC | ADCSC;
+    float temp = -1*(1.8663 - 2.5*ADCvalue)/388;
+    return temp;
 }
 
 #pragma vector = ADC_VECTOR

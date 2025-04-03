@@ -8,6 +8,7 @@ char Data_In[] = "eee";
 int Data_Cnt = 0;
 int Out_Cnt = 0;
 char* Packet;
+int packet_size = 0;
 
 void i2c_master_init(){
     UCB0CTLW0 |= UCSWRST;
@@ -37,11 +38,12 @@ void i2c_master_init(){
     __enable_interrupt();       // Enable Maskable IRQs
 }
 
-void i2c_master_transmit(int address, char* packet){
+void i2c_master_transmit(int address, char* packet, int size){
     // -- Send starting register --
     UCB0I2CSA = address;         // Slave address
     Packet = packet;
-    UCB0TBCNT = 5;
+    packet_size = size;
+    UCB0TBCNT = packet_size;
     UCB0CTLW0 |= UCTR;          // Tx mode
 
     // for (i = 0; i<sizeof(Packet); i++){
@@ -56,11 +58,11 @@ void i2c_master_transmit(int address, char* packet){
 #pragma vector=EUSCI_B0_VECTOR
 __interrupt void EUSCI_B0_I2C_ISR(void){
 
-    if(Data_Cnt<5){                   // if first time in interrupt
+    if(Data_Cnt<packet_size){                   // if first time in interrupt
         __delay_cycles(30);
         UCB0TXBUF = Packet[Data_Cnt];  // transmit each value in packet
         Data_Cnt++;
-        if(Data_Cnt==5) Data_Cnt=0;
+        if(Data_Cnt==packet_size) Data_Cnt=0;
     }else{
         switch(UCB0IV){
             case 0x16:              // ID 16: RXIFG0 asserts after from slave
