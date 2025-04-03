@@ -1,13 +1,17 @@
+#include "app/analog_temp.h"
 #include "heartbeat.h"
+#include "intrinsics.h"
 #include "keypad.h"
 #include "RGB.h"
 #include "i2c_master.h"
+#include "analog_temp.h"
 #include <msp430fr2355.h>
 
 int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;    // Stop watchdog timer
     i2c_master_init();
+    analog_temp_init();
 
     // Disable low-power mode / GPIO high-impedance
     PM5CTL0 &= ~LOCKLPM5;
@@ -17,6 +21,8 @@ int main(void)
     char previous = " ";
     char keypressed = " ";
     int already_unlocked = 0;
+    float temp = 0.0;
+    char* temp_string;
     while(1) {
         // Main loop
         if (keypressed != previous && keypressed != 0 && already_unlocked && keypad_is_unlocked()){
@@ -95,5 +101,9 @@ int main(void)
             already_unlocked = 0;
         }
         keypressed = keypad_scan();
+        temp = 25.5467;
+        snprintf(temp_string, sizeof(temp_string), "%f", temp);
+        i2c_master_transmit(0x40, temp_string);
+        // __delay_cycles(1000000);
     }
 }

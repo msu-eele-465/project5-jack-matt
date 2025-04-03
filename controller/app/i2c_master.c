@@ -7,7 +7,7 @@ int i, j;
 char Data_In[] = "eee";
 int Data_Cnt = 0;
 int Out_Cnt = 0;
-char Packet[] = {0x03, 0x0, 0x10, 0x13, 0x01, 0x03, 0x05, 0x24};
+char* Packet;
 
 void i2c_master_init(){
     UCB0CTLW0 |= UCSWRST;
@@ -18,7 +18,7 @@ void i2c_master_init(){
     UCB0CTLW0 |= UCMODE_3;      // Put into I2C mode
     UCB0CTLW0 |= UCMST;         // Put into master mode
     UCB0CTLW0 |= UCTR;          // Tx mode
-    UCB0I2CSA = 0x0068;         // Slave address = 0x1101000b
+    UCB0I2CSA = 0x40;           // Slave address = 0x1101000b
 
     UCB0CTLW1 |= UCASTP_2;      // Enabling auto stop
 
@@ -37,27 +37,30 @@ void i2c_master_init(){
     __enable_interrupt();       // Enable Maskable IRQs
 }
 
-void i2c_master_transmit(int address, char packet[]){
+void i2c_master_transmit(int address, char* packet){
     // -- Send starting register --
     UCB0I2CSA = address;         // Slave address
-    Packet[0] = packet[0];
-    UCB0TBCNT = 1;
+    Packet = packet;
+    UCB0TBCNT = 5;
     UCB0CTLW0 |= UCTR;          // Tx mode
-    UCB0CTLW0 |= UCTXSTT;       // Start condition
-    while ((UCB0IFG & UCSTPIFG) == 0) 
-        __delay_cycles(100);    // wait for STOP
-    UCB0IFG &= ~UCSTPIFG;       // Clear STOP flag
+
+    // for (i = 0; i<sizeof(Packet); i++){
+        UCB0CTLW0 |= UCTXSTT;       // Start condition
+        while ((UCB0IFG & UCSTPIFG) == 0) 
+            __delay_cycles(100);    // wait for STOP
+        UCB0IFG &= ~UCSTPIFG;       // Clear STOP flag
+    // }
 }
 
 // -- START I2C ISR --
 #pragma vector=EUSCI_B0_VECTOR
 __interrupt void EUSCI_B0_I2C_ISR(void){
 
-    if(Data_Cnt<(1)){                   // if first time in interrupt
+    if(Data_Cnt<5){                   // if first time in interrupt
         __delay_cycles(30);
         UCB0TXBUF = Packet[Data_Cnt];  // transmit each value in packet
         Data_Cnt++;
-        if(Data_Cnt==1) Data_Cnt=0;
+        if(Data_Cnt==5) Data_Cnt=0;
     }else{
         switch(UCB0IV){
             case 0x16:              // ID 16: RXIFG0 asserts after from slave

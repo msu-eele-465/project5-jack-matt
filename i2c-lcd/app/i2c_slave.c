@@ -46,43 +46,44 @@ __interrupt void EUSCI_B0_I2C_ISR(void){
         case 0x16:              // ID 16: RXIFG0 asserts after from slave
             Datum_In = UCB0RXBUF;    //receive data and store in Data_In
             lcd_send_data(Datum_In);
-            lcd_clear_bottom();
-            lcd_clear_top();
             switch(Datum_In){
                 case '0':
-                    lcd_send_string("Static");
-                    break;
-                case '1':
-                    lcd_send_string("Toggle");
-                    break;
-                case '2':
-                    lcd_send_string("Up Count");
-                    break;
-                case '3':
-                    lcd_send_string("In Out");
-                    break;
-                case '4':
-                    lcd_send_string("Down Count");
-                    break;
-                case '5':
-                    lcd_send_string("Rotate Left");
-                    break;
-                case '6':
-                    lcd_send_string("Rotate Right");
-                    break;
-                case '7':
-                    lcd_send_string("Fill");
-                    break;
-                case '9':
-                    lcd_toggle_blink();
-                    break;
-                case 'C':
-                    lcd_toggle_cursor();
-                    break;
-                case 'D':
-                    break;
+                       lcd_clear_bottom();
+                       lcd_clear_top();
+            //         lcd_send_string("Static");
+            //         break;
+            //     case '1':
+            //         lcd_send_string("Toggle");
+            //         break;
+            //     case '2':
+            //         lcd_send_string("Up Count");
+            //         break;
+            //     case '3':
+            //         lcd_send_string("In Out");
+            //         break;
+            //     case '4':
+            //         lcd_send_string("Down Count");
+            //         break;
+            //     case '5':
+            //         lcd_send_string("Rotate Left");
+            //         break;
+            //     case '6':
+            //         lcd_send_string("Rotate Right");
+            //         break;
+            //     case '7':
+            //         lcd_send_string("Fill");
+            //         break;
+            //     case '9':
+            //         lcd_toggle_blink();
+            //         break;
+            //     case 'C':
+            //         lcd_toggle_cursor();
+            //         break;
+            //     case 'D':
+            //         break;
             }
-            if(Datum_In!='D') lcd_set_key_char(Datum_In);
+            lcd_send_string(Datum_In);
+            // if(Datum_In!='D') lcd_set_key_char(Datum_In);
             heartbeat_run();
         case 0x18:              // ID 18: TXIFG0 asserts when register val can be sent
             UCB0TXBUF = 0x03;   // register address
